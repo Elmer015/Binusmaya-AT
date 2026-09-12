@@ -1,0 +1,5 @@
+# Created at 2026-09-12T22:52:12.715
+Boot Manifest-JAR contains absolute paths in classpath 'D:\COLLEGE\SEM 5\Automation Testing\Binus-AT\Binusmaya-AT\target\test-classes'
+Hint: <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+'other' has different root
+
