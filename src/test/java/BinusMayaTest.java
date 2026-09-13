@@ -3,6 +3,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -23,11 +24,13 @@ public class BinusMayaTest {
 
     private WebDriver driver;
     private WebDriverWait wait;
-    private static final String LMS_DASHBOARD_URL = "https://lms.binus.ac.id/lms/dashboard";
+    private static final String BINUSMAYA_URL = "https://binusmaya.binus.ac.id/home";
 
     @BeforeEach
     void setUp() {
         ChromeOptions options = new ChromeOptions();
+        // EAGER mode: allows interacting immediately once DOM is ready without waiting for heavy external assets
+        options.setPageLoadStrategy(PageLoadStrategy.EAGER);
         options.addArguments("--remote-allow-origins=*");
         options.addArguments("--disable-blink-features=AutomationControlled");
         options.addArguments("--start-maximized");
@@ -37,13 +40,11 @@ public class BinusMayaTest {
 
         int port = 9222;
 
-        // Check if an existing Chrome browser is actively responding with remote debugging on port 9222
         if (isDebuggerResponding(port)) {
             System.out.println("[INFO] Attaching directly to your open Chrome on port " + port + "...");
             options.setExperimentalOption("debuggerAddress", "127.0.0.1:" + port);
         } else {
-            System.out.println("[INFO] Launching persistent Chrome automation session...");
-            // Use dedicated automation profile that remembers your login permanently without file-lock collisions
+            System.out.println("[INFO] Launching fast Chrome automation session...");
             String profileDir = System.getProperty("user.home") + File.separator + ".chrome-binus-profile";
             new File(profileDir).mkdirs();
             options.addArguments("--user-data-dir=" + profileDir);
@@ -52,7 +53,7 @@ public class BinusMayaTest {
 
         System.out.println("[INFO] Initializing WebDriver...");
         driver = new ChromeDriver(options);
-        wait = new WebDriverWait(driver, Duration.ofSeconds(45));
+        wait = new WebDriverWait(driver, Duration.ofSeconds(30));
     }
 
     private boolean isDebuggerResponding(int port) {
@@ -85,17 +86,16 @@ public class BinusMayaTest {
     void testOpenSchedule() {
         authenticateAndOpenLms();
 
-        System.out.println("[INFO] Locating Schedule sidebar link (<a class='nav-link' href='/lms/schedule'>)...");
+        System.out.println("[INFO] Finding and clicking Schedule sidebar link...");
         WebElement scheduleLink = wait.until(ExpectedConditions.elementToBeClickable(
                 By.xpath("//a[@class='nav-link' and contains(@href, '/lms/schedule')] | //a[contains(@href, '/lms/schedule')] | //li[contains(@class,'nav-item')]//a[contains(., 'Schedule')]")));
 
-        System.out.println("[INFO] Clicking Schedule link...");
         clickElement(scheduleLink);
 
-        System.out.println("[INFO] Verifying Schedule page loaded...");
+        System.out.println("[INFO] Verifying Schedule page...");
         wait.until(ExpectedConditions.or(
                 ExpectedConditions.urlContains("schedule"),
-                ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[contains(translate(text(), 'SCHEDULE', 'schedule'), 'schedule')]"))
+                ExpectedConditions.presenceOfElementLocated(By.xpath("//*[contains(translate(text(), 'SCHEDULE', 'schedule'), 'schedule')]"))
         ));
 
         String currentUrl = driver.getCurrentUrl();
@@ -111,27 +111,23 @@ public class BinusMayaTest {
     void testOpenCoursesAndSelectAutomationTesting() {
         authenticateAndOpenLms();
 
-        System.out.println("[INFO] Locating Courses sidebar menu link (<a class='nav-link' href='/lms/course'>)...");
+        System.out.println("[INFO] Finding and clicking Courses sidebar link...");
         WebElement coursesLink = wait.until(ExpectedConditions.elementToBeClickable(
                 By.xpath("//a[@class='nav-link' and contains(@href, '/lms/course')] | //a[contains(@href, '/lms/course')] | //li[contains(@class,'nav-item')]//a[contains(., 'Courses')]")));
 
-        System.out.println("[INFO] Clicking Courses sidebar link...");
         clickElement(coursesLink);
 
-        System.out.println("[INFO] Waiting for Courses page to load and 'Automation Testing' card to appear...");
-        wait.until(ExpectedConditions.urlContains("/lms/course"));
-
+        System.out.println("[INFO] Finding and clicking 'Automation Testing' course link...");
         WebElement autoTestingCourse = wait.until(ExpectedConditions.elementToBeClickable(
                 By.xpath("//a[contains(@href, '/lms/course/') and contains(normalize-space(), 'Automation Testing')] | //h3[contains(@class, 'item') and contains(@class, 'title')]//a[contains(., 'Automation Testing')] | //div[contains(@class, 'C--CardClass')][.//a[contains(., 'Automation Testing')]]//a[contains(., 'Automation Testing')] | //*[contains(text(), 'Automation Testing')]")));
 
-        System.out.println("[INFO] Clicking 'Automation Testing' course link...");
         clickElement(autoTestingCourse);
 
-        System.out.println("[INFO] Verifying Automation Testing course session page loaded...");
+        System.out.println("[INFO] Verifying Automation Testing page...");
         wait.until(ExpectedConditions.or(
                 ExpectedConditions.urlContains("session"),
                 ExpectedConditions.urlContains("course"),
-                ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[contains(text(), 'Automation Testing') or contains(text(), 'COMP6883001')]"))
+                ExpectedConditions.presenceOfElementLocated(By.xpath("//*[contains(text(), 'Automation Testing') or contains(text(), 'COMP6883001')]"))
         ));
 
         String currentUrl = driver.getCurrentUrl();
@@ -147,22 +143,16 @@ public class BinusMayaTest {
     void testOpenLatestForumInDashboard() {
         authenticateAndOpenLms();
 
-        System.out.println("[INFO] Waiting for 'Latest Forum Posts' widget on dashboard...");
-        WebElement forumHeader = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.xpath("//*[contains(text(), 'Latest Forum Posts')]")));
-        System.out.println("[SUCCESS] Found 'Latest Forum Posts' widget!");
-
-        System.out.println("[INFO] Locating the first / latest forum post...");
+        System.out.println("[INFO] Finding and clicking latest forum post...");
         WebElement latestPost = wait.until(ExpectedConditions.elementToBeClickable(
                 By.xpath("//*[contains(text(), 'Latest Forum Posts')]/following::div[contains(., 'Replied on')][1] | //*[contains(text(), 'Latest Forum Posts')]/ancestor::div[contains(@class, 'card') or contains(@class, 'col') or contains(@class, 'box') or contains(@class, 'widget') or contains(@class, 'panel')]//div[contains(., 'Replied on') or contains(., 'Lecturer') or contains(., 'Anemic Code')][last()] | //*[contains(text(), 'Anemic Code')] | //*[contains(text(), 'Latest Forum Posts')]/following::div[contains(@class, 'thread-author-name')][1]")));
 
-        System.out.println("[INFO] Clicking latest forum post: " + latestPost.getText());
         clickElement(latestPost);
 
-        System.out.println("[INFO] Verifying forum thread loaded...");
+        System.out.println("[INFO] Verifying forum thread page...");
         wait.until(ExpectedConditions.or(
                 ExpectedConditions.urlContains("forum"),
-                ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[contains(translate(text(), 'FORUM', 'forum'), 'forum')] | //*[contains(text(), 'Thread')] | //*[contains(text(), 'Post')] | //*[contains(text(), 'Anemic Code')]"))
+                ExpectedConditions.presenceOfElementLocated(By.xpath("//*[contains(translate(text(), 'FORUM', 'forum'), 'forum')] | //*[contains(text(), 'Thread')] | //*[contains(text(), 'Post')] | //*[contains(text(), 'Anemic Code')]"))
         ));
 
         String currentUrl = driver.getCurrentUrl();
@@ -172,56 +162,41 @@ public class BinusMayaTest {
     }
 
     /**
-     * Navigate to LMS Dashboard and ensure focus on LMS page.
+     * Open Binusmaya portal, click LMS icon as soon as found, and switch to LMS.
      */
     private void authenticateAndOpenLms() {
-        System.out.println("[INFO] Navigating directly to LMS Dashboard (" + LMS_DASHBOARD_URL + ")...");
-        driver.get(LMS_DASHBOARD_URL);
+        System.out.println("[INFO] Opening Binusmaya (" + BINUSMAYA_URL + ")...");
+        driver.get(BINUSMAYA_URL);
 
-        // Switch to the window/tab containing LMS if multiple tabs exist
-        for (String handle : driver.getWindowHandles()) {
-            driver.switchTo().window(handle);
-            if (driver.getCurrentUrl().contains("lms.binus.ac.id")) {
+        // Check if login is needed
+        String currentUrl = driver.getCurrentUrl();
+        if (currentUrl.contains("login.microsoftonline.com") || currentUrl.contains("login")) {
+            System.out.println("\n[ACTION REQUIRED] Please log in with your Binus account in Chrome.\n");
+        }
+
+        // Instantly wait for and click the LMS button
+        WebElement lmsButton = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//img[@alt='LMS'] | //p[normalize-space()='LMS'] | //div[contains(@class,'MuiGrid-item')][.//img[@alt='LMS'] or .//p[text()='LMS']]")));
+
+        String originalWindow = driver.getWindowHandle();
+        clickElement(lmsButton);
+
+        // Switch immediately if LMS opens in a new tab
+        for (String windowHandle : driver.getWindowHandles()) {
+            if (!originalWindow.contentEquals(windowHandle)) {
+                driver.switchTo().window(windowHandle);
                 break;
             }
         }
-
-        System.out.println("[INFO] Active page URL: " + driver.getCurrentUrl());
-
-        // Check if redirected to Microsoft / Binus Login
-        String currentUrl = driver.getCurrentUrl();
-        if (currentUrl.contains("login.microsoftonline.com") || currentUrl.contains("login") || currentUrl.contains("binusmaya")) {
-            System.out.println("\n=======================================================");
-            System.out.println("[ACTION REQUIRED] Please log in with your Binus account");
-            System.out.println("in the opened Chrome window. It will remember your login");
-            System.out.println("for all future test executions.");
-            System.out.println("=======================================================\n");
-        }
-
-        // Wait until user lands on LMS Dashboard
-        wait.until(ExpectedConditions.or(
-                ExpectedConditions.urlContains("dashboard"),
-                ExpectedConditions.visibilityOfElementLocated(By.xpath("//a[contains(@href, '/lms/schedule')] | //a[contains(@href, '/lms/course')] | //*[contains(text(), 'Latest Forum Posts')]"))
-        ));
-        
-        // Small pause to allow Angular/React frontend components to finish rendering
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException ignored) {}
-
-        System.out.println("[SUCCESS] LMS Dashboard is fully loaded and ready!");
     }
 
     /**
-     * Safe click helper with scroll into view and JS click fallback.
+     * Instant click with fast JavaScript fallback.
      */
     private void clickElement(WebElement element) {
         try {
-            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", element);
-            wait.until(ExpectedConditions.elementToBeClickable(element));
             element.click();
         } catch (Exception e) {
-            System.out.println("[INFO] Standard click intercepted (" + e.getMessage() + "), executing via JavaScript click...");
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
         }
     }

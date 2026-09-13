@@ -1,6 +1,6 @@
 # Binus LMS Automation Testing 🚀
 
-Proyek otomatisasi pengujian (Automation Testing) untuk platform **Binus LMS** (`https://lms.binus.ac.id/lms/dashboard`) berbasis **Java**, **Selenium WebDriver**, dan **JUnit 5**.
+Proyek otomatisasi pengujian (Automation Testing) yang dimulai dari portal **Binusmaya** (`https://binusmaya.binus.ac.id/home`), mengklik ikon **LMS**, lalu melakukan pengujian pada **Binus LMS** berbasis **Java**, **Selenium WebDriver**, dan **JUnit 5**.
 
 ---
 
@@ -12,18 +12,18 @@ Proyek otomatisasi pengujian (Automation Testing) untuk platform **Binus LMS** (
 
 ---
 
-## 🔑 Langkah Pertama & Autentikasi (First-Run Setup)
+## 🔑 Alur Kerja & Autentikasi (Workflow & Setup)
 
-Program ini menggunakan profil Chrome otomatis (`.chrome-binus-profile`) agar sesi login Anda tersimpan secara aman dan permanen.
+1. **Alur Navigasi Utama**:
+   - Program membuka portal **Binusmaya** (`https://binusmaya.binus.ac.id/home`).
+   - Mencari dan mengklik ikon/tombol **LMS**.
+   - Otomatis berpindah tab ke **Binus LMS Dashboard** (`https://lms.binus.ac.id/lms/dashboard`).
+   - Melanjutkan eksekusi skenario pengujian masing-masing.
 
-> ### ⚠️ PENTING: Login Pertama Kali (First Run)
-> 1. Saat Anda menjalankan pengujian untuk **pertama kali**, jendela browser Google Chrome akan terbuka secara otomatis.
-> 2. Jika muncul halaman login Microsoft / BINUS:
->    - Masukkan **Email BINUS** dan **Password** Anda.
->    - Selesaikan verifikasi 2FA / Authenticator (jika ada).
->    - Pilih **"Yes"** pada opsi *"Stay signed in?"*.
-> 3. Setelah berhasil masuk ke Dashboard LMS, pengujian akan otomatis dilanjutkan.
-> 4. **Untuk pengujian berikutnya**: Browser akan **langsung masuk secara otomatis** tanpa perlu melakukan login ulang!
+2. **Login Pertama Kali (First Run)**:
+   - Program menggunakan profil Chrome `.chrome-binus-profile` untuk menyimpan sesi login Anda secara aman.
+   - Pada saat pertama kali dijalankan, jika diarahkan ke halaman login Microsoft/BINUS, silakan login satu kali dan pilih **"Yes"** pada opsi *"Stay signed in?"*.
+   - Pada pengujian berikutnya, browser akan **langsung masuk secara otomatis** tanpa perlu login ulang!
 
 ---
 
@@ -31,11 +31,11 @@ Program ini menggunakan profil Chrome otomatis (`.chrome-binus-profile`) agar se
 
 Semua skenario pengujian didefinisikan dalam file [`BinusMayaTest.java`](file:///src/test/java/BinusMayaTest.java):
 
-| Test Case | Metode | Deskripsi |
+| Test Case | Metode | Deskripsi Alur |
 | :--- | :--- | :--- |
-| **Test 1** | `testOpenSchedule()` | Membuka sidebar, mengklik menu **Schedule** (`/lms/schedule`), dan memverifikasi halaman jadwal terbuka. |
-| **Test 2** | `testOpenCoursesAndSelectAutomationTesting()` | Membuka sidebar **Courses** (`/lms/course`), memilih dan mengklik kartu mata kuliah **Automation Testing**, serta memverifikasi halaman sesi materi. |
-| **Test 3** | `testOpenLatestForumInDashboard()` | Mengakses Dashboard, mencari widget **Latest Forum Posts**, mengklik postingan thread forum terbaru, dan memverifikasi halaman diskusi forum terbuka. |
+| **Test 1** | `testOpenSchedule()` | Masuk via Binusmaya -> Klik ikon LMS -> Buka sidebar dan klik menu **Schedule** (`/lms/schedule`) -> Verifikasi halaman jadwal. |
+| **Test 2** | `testOpenCoursesAndSelectAutomationTesting()` | Masuk via Binusmaya -> Klik ikon LMS -> Buka menu **Courses** (`/lms/course`) -> Pilih mata kuliah **Automation Testing** -> Verifikasi halaman materi. |
+| **Test 3** | `testOpenLatestForumInDashboard()` | Masuk via Binusmaya -> Klik ikon LMS -> Pada Dashboard, cari widget **Latest Forum Posts** -> Klik postingan thread forum terbaru -> Verifikasi halaman diskusi forum. |
 
 ---
 
